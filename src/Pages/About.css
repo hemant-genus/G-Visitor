@@ -1,0 +1,39 @@
+.about-container {
+    width: 80%;
+    margin: 0 auto;
+    padding: 20px;
+    line-height: 1.6;
+    background-color: #f4f4f4;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  .about-container h1 {
+    font-size: 2.5rem;
+    margin-bottom: 20px;
+  }
+  
+  .about-container p {
+    font-size: 1.1rem;
+    margin-bottom: 15px;
+  }
+  
+  .about-container ul {
+    margin-top: 10px;
+    padding-left: 20px;
+  }
+  
+  .about-container ul li {
+    list-style-type: disc;
+    margin-bottom: 8px;
+  }
+  
+  .about-container a {
+    color: #007bff;
+    text-decoration: none;
+  }
+  
+  .about-container a:hover {
+    text-decoration: underline;
+  }
+  
