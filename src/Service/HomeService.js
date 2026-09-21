@@ -6,6 +6,62 @@ import axiosInstance from '../Helper/axiosInstance';
 
 class HomeService{
 
+  static async FetchUserPlants(empCode, token) {
+        debugger;
+        try {
+          const exeUrl = API_ENDPOINTS.fetchUsPlant();
+          const response = await axiosInstance.get(exeUrl, {
+            params: { empcode: empCode },
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${token}`
+            }
+          });
+
+          const result = response.data;
+
+          if (!result.success || !result.data || result.data.length === 0) {
+            showToast('No plants found for this employee!', 'error', { autoClose: 500 });
+            return { success: false, data: [] };
+          }
+
+          return { success: true, data: result.data };
+        } catch (error) {
+          console.error("Error fetching plant:", error);
+          showToast('Error fetching plant data!', 'error', { autoClose: 500 });
+          return { success: false, data: [] };
+        }
+      }
+
+
+  
+    static async GetPlants(){
+        try{
+            
+            const homeUrl = API_ENDPOINTS.getMenus();
+            const token = localStorage.getItem('token');
+            const response = await axiosInstance.get(homeUrl,{
+            headers:{
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+            },
+          });
+          debugger
+          const result = response.data;
+          if(!result.success){
+            
+            return { success: false,data:result };
+          }else {
+            
+            return { success: true, data: result };
+          }
+        }
+        catch(error){
+            console.error("Error Occured:",error)
+        }
+    }
+    //--------------------------------------------------
+
     static async getMenuItem(){
         try{
             
@@ -32,9 +88,9 @@ class HomeService{
         }
     }
 
-    static async  register(register){
+    static async register(register){
       try {
-        debugger
+        debugger;
         const token = localStorage.getItem('Token');
         const loginUrl = API_ENDPOINTS.setRegisterData();
         debugger;
@@ -59,11 +115,11 @@ class HomeService{
             })
             localStorage.setItem('token', result.data.token);
             return { success: true, data: result };
-          }
+          } 
         } catch (error) {
           // Handle network or other errors
           console.error("Error occurred:", error);
-        }
+        } 
 }
 //------------------------------
 
@@ -73,6 +129,7 @@ class HomeService{
 
 //-------------------------------
 static async SaveVisitor(visitor) {
+  debugger;
   try {
     debugger;
     const token = localStorage.getItem('Token');
@@ -84,9 +141,7 @@ static async SaveVisitor(visitor) {
         "Authorization": `Bearer ${token}`
       },
     });
-
     const result = response.data;
-
     if (!result.success) {
       showToast('Data Not set.', 'error', { autoClose: 500 });
       return { success: false };
@@ -102,7 +157,7 @@ static async SaveVisitor(visitor) {
 //=--------------------------
 
 
-// new code 
+// new code ------------------
 
 static async GetEmployees(inputValue) {
   try {
@@ -138,7 +193,7 @@ static async GetEmployees(inputValue) {
 
 
 
-//-----------------------
+//-----------------------------------
 
 static async  SaveVisitorOld(visitor){
   try {
@@ -156,7 +211,7 @@ static async  SaveVisitorOld(visitor){
       if (!result.success) {
         showToast('Data Not set.','error',{
           autoClose:500
-        })
+        })  
         
         return { success: false };
         
@@ -193,7 +248,7 @@ static async  Updateregister(register){
         })
         
         return { success: false };
-        
+            
       } else {
         // Handle login success
         showToast('Login successful!','success',{
@@ -241,34 +296,25 @@ static async  Deleteregister(register){
       console.error("Error occurred:", error);
     }
 }
+//--------------------------------------------
 
-static async GetVisitorReport(fromDate, toDate) {
+static async GetExit(visitorId) {
   try {
-    if (!fromDate || !toDate) {
-      showToast('Please select both From Date and To Date!', 'error', {
-        autoClose: 500,
-      });
-      return { success: false, data: [] };
-    }
-      debugger;
-    const exeUrl = API_ENDPOINTS.getVisitorData();
+    debugger;
+    const exeUrl = API_ENDPOINTS.getVisitorExit();
     const token = localStorage.getItem('Token');
 
-    // Pass FromDate and ToDate as query parameters
+    // Pass only the Id as query parameter
     const response = await axiosInstance.get(exeUrl, {
-      params: { fromDate, toDate },
+      params: { id: visitorId },
       headers: {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${token}`,
       },
     });
-
     const result = response.data;
-
     if (!result.success || !result.data || result.data.length === 0) {
-      showToast('No records found for the selected date range!', 'error', {
-        autoClose: 500,
-      });
+      showToast('No records found!', 'error', { autoClose: 500 });
       return { success: false, data: [] };
     }
 
@@ -276,15 +322,77 @@ static async GetVisitorReport(fromDate, toDate) {
 
   } catch (error) {
     console.error("Error Occurred:", error);
-    showToast('Error fetching visitor data!', 'error', {
-      autoClose: 500,
-    });
+    showToast('Error fetching visitor data!', 'error', { autoClose: 500 });
     return { success: false, data: [] };
   }
 }
 
 
-    static async getRegisterData(){
+//--------------------------------------------
+
+  static async GetVisitorReport(fromDate, toDate, userPlant, userCode) {
+    try {
+      if (!fromDate || !toDate) {
+        showToast('Please select both From Date and To Date!', 'error', {
+          autoClose: 500,
+        });
+        return { success: false, data: [] };
+      }
+        debugger;
+      const exeUrl = API_ENDPOINTS.getVisitorData();
+      const token = localStorage.getItem('Token');
+
+      //-----------------------------------------------
+      //----------cURL
+      //   const queryString = new URLSearchParams({
+      //   fromDate,
+      //   toDate,
+      //   userPlant,
+      //   userCode
+      // }).toString();
+
+      // const curlCommand = `
+      // curl -X GET "${exeUrl}?${queryString}" \
+      // -H "Content-Type: application/json" \
+      // -H "Authorization: Bearer ${token}"
+      // `;
+
+      // console.log("cURL Command:", curlCommand);
+
+
+      //------------------------------------------------
+
+      // Pass FromDate and ToDate as query parameters
+      const response = await axiosInstance.get(exeUrl, {
+        params: { fromDate, toDate, userPlant, userCode },
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+        },
+      });
+
+      const result = response.data;
+
+      if (!result.success || !result.data || result.data.length === 0) {
+        showToast('No records found for the selected date range!', 'error', {
+          autoClose: 500,
+        });
+        return { success: false, data: [] };
+      }
+
+      return { success: true, data: result.data };
+
+    } catch (error) {
+      console.error("Error Occurred:", error);
+      showToast('Error fetching visitor data!', 'error', {
+        autoClose: 500,
+      });
+      return { success: false, data: [] };
+    }
+  }
+
+  static async getRegisterData()
+    {
         try{
             debugger;
             const exeUrl = API_ENDPOINTS.getRegisterData();
@@ -337,5 +445,5 @@ static async GetVisitorReport(fromDate, toDate) {
     //         console.error("Error Occured:",error)
     //     }
     // }
-}
+  }
 export default HomeService;

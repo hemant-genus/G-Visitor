@@ -16,8 +16,6 @@ const Login = () => {
   useEffect(() => {
     debugger;
     localStorage.clear();
-
-
     //  const storedEmail = localStorage.getItem('userEmail');
     debugger;
     // if (storedEmail) {
@@ -32,73 +30,51 @@ const Login = () => {
       return;
     }
     fetchData();
-    localStorage.setItem('userEmail', email);
+    localStorage.setItem('userEmail', email);    
     //  navigate('/home');
   };
 
-
-
+  async function getPublicIP() {
+  const res = await fetch("https://api.ipify.org?format=json");
+  const data = await res.json();
+  return data.ip;
+}
 
   const fetchData = async () => {
-    debugger;
+    //  debugger;
     try {
       setLoading(true);
+      const HostName = window.location.hostname;
+      const ip = await getPublicIP();
+      //  debugger;
       const loginRequest = new User(email, password);
       const loginSuccess = await AuthService.login(loginRequest);
       
       if (loginSuccess.success) {
-        debugger;
+            debugger;
         const result = loginSuccess?.data?.data;
+        //----------------Dynamic Menu Role Assignment ----------------//
+        const menuResponse  = await AuthService.GetUserMenus(result.employeeCode,result.token);
+        debugger
+        localStorage.setItem('MenuItem', JSON.stringify(menuResponse.data));
         localStorage.setItem('Token', result.token);
         localStorage.setItem('email', result.workEmail);
+        localStorage.setItem('userEmail', result.workEmail);
         localStorage.setItem('UserCode', result.employeeCode);
         localStorage.setItem('PlantCode', result.locationName);
+        //  localStorage.setItem('role', result.role);
+        localStorage.setItem('role', 'Admin');
         localStorage.setItem('UserName', result.employeeName.split(' ')[0]);
         navigate('/home');
       } else {
         setLoading(false);
         setError("Invalid employee code or password.");
-        alert("Invalid User or Password.");
+        alert("Inval  id User or Password.");
         //  navigate('/login');
       }
     } catch (err) {
       setError(err);
       navigate('/login');
-    } 
-  };
-
-
-
-
-
-
-
-
-
-
-
-  const fetchDataOld = async () => {
-    try {
-      setLoading(true);
-      const loginRequest = new User(email, password);
-      const loginSuccess = await AuthService.login(loginRequest);
-      
-      if (loginSuccess.success) {
-        debugger;
-        const result = loginSuccess?.data?.data;
-        localStorage.setItem('Token', result.token);
-        localStorage.setItem('email', result.workEmail);
-        localStorage.setItem('UserCode', result.employeeCode);
-        localStorage.setItem('PlantCode', result.locationName);
-        localStorage.setItem('UserName', result.employeeName.split(' ')[0]);
-        navigate('/home');
-      } else {
-        setError("Invalid employee code or password.");
-      }
-    } catch (err) {
-      setError(err);
-    } finally {
-      setLoading(false);
     }
   };
 

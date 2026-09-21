@@ -1,11 +1,36 @@
 import React, { useState, useRef, useCallback, useEffect } from "react";
 import Select from "react-select";
 import Webcam from "react-webcam";
-import debounce from "lodash.debounce"; // Import debounce
-import HomeService from "../Service/HomeService"; // Ensure this API call fetches employees
-import "./VisitorEntry.css"; // Import the CSS file
+import debounce from "lodash.debounce";
+import HomeService from "../Service/HomeService";
+import "./VisitorEntry.css";
+
+
+
+// Full-screen overlay loader
+const LoaderOverlay = ({ loading }) => {
+  if (!loading) return null;
+  return (
+    <div
+      className="fixed-top w-100 h-100 d-flex flex-column justify-content-center align-items-center bg-dark bg-opacity-50"
+      style={{ zIndex: 1050 }}
+    >
+      <div
+        className="spinner-border text-light"
+        role="status"
+        style={{ width: "3rem", height: "3rem" }}
+      >
+        <span className="visually-hidden">Loading...</span>
+      </div>
+      <p className="text-white mt-3 fs-5">Please wait...</p>
+    </div>
+  );
+};
 
 export const VisitorEntry = () => {
+  const [plants, setPlants] = useState([]);
+  const [selectedPlant, setSelectedPlant] = useState("");
+
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [gender, setGender] = useState("");
@@ -18,12 +43,37 @@ export const VisitorEntry = () => {
   const [employees, setEmployees] = useState([]);
   const [selectedEmployee, setSelectedEmployee] = useState(null);
   const [searchInput, setSearchInput] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [showPopup, setShowPopup] = useState(false);
+  const [submittedData, setSubmittedData] = useState({});
+  const [countdown, setCountdown] = useState(10);
 
-
-  const userPlant = localStorage.getItem('PlantCode');
-
-
+  //  const userPlant = localStorage.getItem("PlantCode") || "Plant Code";
   const webcamRef = useRef(null);
+
+  const Login_User = localStorage.getItem('UserCode');
+  const Token = localStorage.getItem('Token');
+  
+const fetchUserPlants = async () => {
+  //  debugger
+  try {
+    const res = await HomeService.FetchUserPlants(Login_User, Token); // 🔥 API CALL
+
+    if (res?.success && Array.isArray(res.data)) {
+      setPlants(res.data);
+
+      // Auto-select if only ONE plant
+      if (res.data.length === 1) {
+        setSelectedPlant(res.data[0].plantCode);
+      }
+    } else {
+      setPlants([]);
+    }
+  } catch (err) {
+    console.error("Error fetching plants:", err);
+    setPlants([]);
+  }
+};
 
   // Convert Data URL to File
   const dataURLtoFile = (dataurl, filename) => {
@@ -32,52 +82,59 @@ export const VisitorEntry = () => {
     let bstr = atob(arr[1]);
     let n = bstr.length;
     let u8arr = new Uint8Array(n);
-    while (n--) {
-      u8arr[n] = bstr.charCodeAt(n);
-    }
+    while (n--) u8arr[n] = bstr.charCodeAt(n);
     return new File([u8arr], filename, { type: mime });
   };
 
   // Capture Image from Webcam
   const captureImage = useCallback(() => {
     const imageSrc = webcamRef.current.getScreenshot();
-    const imageFile = dataURLtoFile(imageSrc, "visitor.jpg");
-    setVisitorImage(imageFile);
+    if (imageSrc) {
+      const imageFile = dataURLtoFile(imageSrc, "visitor.jpg");
+      setVisitorImage(imageFile);
+    }
   }, [webcamRef]);
 
-  // Fetch Employees based on user input with debounce
+  // Fetch Employees
   const fetchEmployees = async (inputValue) => {
     if (!inputValue) return;
     try {
-      const response = await HomeService.GetEmployees(inputValue); // API Call
+      const response = await HomeService.GetEmployees(inputValue);
       if (response?.success && response.data) {
-        setEmployees(response.data.map(emp => ({ value: emp.id, label: emp.name })));
-      } else {
-        setEmployees([]);
-      }
+        setEmployees(
+          response.data.map((emp) => ({ value: emp.id, label: emp.name }))
+        );
+      } else setEmployees([]);
     } catch (error) {
       console.error("Error fetching employees:", error);
       setEmployees([]);
     }
   };
 
-
-  
-  // Debounce API call (delay 500ms after typing)
   const debouncedFetchEmployees = useCallback(debounce(fetchEmployees, 500), []);
-  // Handle input change for the dropdown
   const handleInputChange = (inputValue) => {
     setSearchInput(inputValue);
-    if (inputValue.length >= 2) {
-      debouncedFetchEmployees(inputValue);
-    } else {
-      setEmployees([]);
-    }
+    if (inputValue.length >= 2) debouncedFetchEmployees(inputValue);
+    else setEmployees([]);
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  // Submit handler
+  const handleSubmit = async (e) => 
+  {
+      e.preventDefault();
+     // ✅ Validation: stop submission if "Meet to Whom" is empty
+      if (!selectedEmployee) {
+        alert("Please select 'Meet to Whom' before submitting.");
+        return; // stop form submission
+      }
+      if (!selectedPlant || selectedPlant === "0") {
+        alert("Please select a Plant before submitting.");
+        return;
+      }
 
+    if (loading) return;
+    setLoading(true);
+//  debugger;
     const formData = new FormData();
     formData.append("name", name);
     formData.append("email", email);
@@ -87,16 +144,35 @@ export const VisitorEntry = () => {
     formData.append("address", address);
     formData.append("purpose", purpose);
     formData.append("carryingItems", carryingItems);
-    formData.append("empId", selectedEmployee ? selectedEmployee.value : ""); // Store selected Employee ID
-    if (visitorImage) {
-      formData.append("visitorImage", visitorImage);
-    }
+    // formData.append("userPlant", userPlant);
+    formData.append("userPlant", selectedPlant);
+    formData.append("empId", selectedEmployee ? selectedEmployee.value : "");
+    formData.append("Login_User", Login_User);
+    if (visitorImage) formData.append("visitorImage", visitorImage);
 
     try {
+      debugger;
       const saveResponse = await HomeService.SaveVisitor(formData);
       debugger;
       if (saveResponse?.success) {
-        alert("Visitor Pass Registration Successful!");
+        setSubmittedData({
+          name,
+          email,
+          gender,
+          mobile,
+          state,
+          address,
+          purpose,
+          carryingItems,
+          employee: selectedEmployee?.label || "",
+          image: visitorImage ? URL.createObjectURL(visitorImage) : null,
+          selectedPlant,
+          Login_User
+        });
+        setShowPopup(true);
+        setCountdown(6);
+
+        // Reset form
         setName("");
         setEmail("");
         setGender("");
@@ -110,24 +186,72 @@ export const VisitorEntry = () => {
       }
     } catch (error) {
       console.error("Error saving visitor:", error);
+    } finally {
+      setLoading(false);
     }
   };
+//  (window.location.href = `${window.location.origin}/G-Visitor/#/VisitorReport`)
+  // Countdown redirect
+  useEffect(() => {
+    let timer;
+    if (showPopup) {
+      timer = setInterval(() => {
+        setCountdown((prev) => {
+          if (prev <= 1) {
+          clearInterval(timer);
+
+
+          window.location.href = `${window.location.origin}/G-Visitor/#/VisitorReport`;
+          return 0;
+        }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+    return () => clearInterval(timer);
+  }, [showPopup]);
+
+    useEffect(() => {
+        fetchUserPlants();
+      }, []);
+
 
   return (
-    <div className="container">
-  <h2 className="my-3">Visitor Entry</h2>
-  <form onSubmit={handleSubmit}>
+    <div className="container position-relative">
+      <LoaderOverlay loading={loading} />
 
-    {/* Row 1: Plant, Meet to Whom, Name */}
-    <div className="row mb-3">
-      <div className="col-md-4">
-        <label className="form-label">Plant:</label>
-        <input type="text" value={userPlant} disabled className="form-control" />
+      <h2 className="my-3 text-center">Visitor Entry</h2>
+
+      <div className="visitor-entry-wrapper">
+  <form onSubmit={handleSubmit} className="visitor-form">
+
+    {/* LEFT SIDE - FORM FIELDS */}
+    <div className="form-section">
+
+      {/* Plant */}
+      <div>
+        <label className="form-label">
+          Plant: <span className="text-danger">*</span>
+        </label>
+        <select
+          className="form-select"
+          value={selectedPlant}
+          onChange={(e) => setSelectedPlant(e.target.value)}
+          required
+        >
+          <option value="">-- Select Plant --</option>
+          {plants.map((p) => (
+            <option key={p.plantCode} value={p.plantCode}>
+              {p.plantCode} - {p.plantName}
+            </option>
+          ))}
+        </select>
       </div>
-      <div className="col-md-4">
+
+      {/* Meet To */}
+      <div>
         <label className="form-label">Meet to Whom:</label>
         <Select
-          className="form-control"
           options={employees}
           value={selectedEmployee}
           onInputChange={handleInputChange}
@@ -136,155 +260,234 @@ export const VisitorEntry = () => {
           isSearchable
         />
       </div>
-      <div className="col-md-4">
-        <label className="form-label">Visitor Name: <span className="text-danger">*</span></label>
-        <input type="text" value={name} onChange={(e) => setName(e.target.value)} required className="form-control" />
-      </div>
-    </div>
 
-    {/* Row 2: Email, Gender, Contact */}
-    <div className="row mb-3">
-      <div className="col-md-4">
-        <label className="form-label">Visitor Email:</label>
-        <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="form-control" />
+      {/* Visitor Name */}
+      <div>
+        <label className="form-label">
+          Visitor Name: <span className="text-danger">*</span>
+        </label>
+        <input
+          type="text"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          required
+          className="form-control"
+        />
       </div>
-      <div className="col-md-4">
-        <label className="form-label">Visitor Gender: <span className="text-danger">*</span></label>
-        <select value={gender} onChange={(e) => setGender(e.target.value)} required className="form-select">
+
+      {/* Email */}
+      <div>
+        <label className="form-label">Visitor Email:</label>
+        <input
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          className="form-control"
+        />
+      </div>
+
+      {/* Gender */}
+      <div>
+        <label className="form-label">
+          Visitor Gender: <span className="text-danger">*</span>
+        </label>
+        <select
+          value={gender}
+          onChange={(e) => setGender(e.target.value)}
+          required
+          className="form-select"
+        >
           <option value="">Select Gender</option>
           <option value="Male">Male</option>
           <option value="Female">Female</option>
         </select>
       </div>
-      <div className="col-md-4">
-        <label className="form-label">Visitor Contact No.: <span className="text-danger">*</span></label>
-        <input type="tel" maxLength={10} value={mobile} onChange={(e) => setMobile(e.target.value)} required className="form-control" />
-      </div>
-    </div>
 
-    {/* Row 3: State, Address, Purpose */}
-    <div className="row mb-3">
-      <div className="col-md-4">
-        <label className="form-label">Visitor State: </label>
-        <select value={state} onChange={(e) => setState(e.target.value)} >
-        <option value="0">-- Select State --</option>
-        <option value="Andhra Pradesh">Andhra Pradesh</option>
-        <option value="Arunachal Pradesh">Arunachal Pradesh</option>
-        <option value="Assam">Assam</option>
-        <option value="Bihar">Bihar</option>
-        <option value="Chhattisgarh">Chhattisgarh</option>
-        <option value="Goa">Goa</option>
-        <option value="Gujarat">Gujarat</option>
-        <option value="Haryana">Haryana</option>
-        <option value="Himachal Pradesh">Himachal Pradesh</option>
-        <option value="Jharkhand">Jharkhand</option>
-        <option value="Karnataka">Karnataka</option>
-        <option value="Kerala">Kerala</option>
-        <option value="Madhya Pradesh">Madhya Pradesh</option>
-        <option value="Maharashtra">Maharashtra</option>
-        <option value="Manipur">Manipur</option>
-        <option value="Meghalaya">Meghalaya</option>
-        <option value="Mizoram">Mizoram</option>
-        <option value="Nagaland">Nagaland</option>
-        <option value="Odisha">Odisha</option>
-        <option value="Punjab">Punjab</option>
-        <option value="Rajasthan">Rajasthan</option>
-        <option value="Sikkim">Sikkim</option>
-        <option value="Tamil Nadu">Tamil Nadu</option>
-        <option value="Telangana">Telangana</option>
-        <option value="Tripura">Tripura</option>
-        <option value="Uttar Pradesh">Uttar Pradesh</option>
-        <option value="Uttarakhand">Uttarakhand</option>
-        <option value="West Bengal">West Bengal</option>
-        <option value="Andaman and Nicobar Islands">Andaman and Nicobar Islands</option>
-        <option value="Chandigarh">Chandigarh</option>
-        <option value="Dadra and Nagar Haveli and Daman and Diu">Dadra and Nagar Haveli and Daman and Diu</option>
-        <option value="Delhi">Delhi</option>
-        <option value="Jammu and Kashmir">Jammu and Kashmir</option>
-        <option value="Ladakh">Ladakh</option>
-        <option value="Lakshadweep">Lakshadweep</option>
-        <option value="Puducherry">Puducherry</option>
+      {/* Mobile */}
+      <div>
+        <label className="form-label">
+          Visitor Contact No.: <span className="text-danger">*</span>
+        </label>
+        <input
+          type="tel"
+          inputMode="numeric"
+          maxLength={10}
+          value={mobile}
+          required
+          className="form-control"
+          onChange={(e) =>
+            setMobile(e.target.value.replace(/\D/g, ""))
+          }
+        />
+      </div>
+
+      {/* State */}
+      <div>
+        <label className="form-label">Visitor State:</label>
+        <select
+          value={state}
+          onChange={(e) => setState(e.target.value)}
+          className="form-select"
+        >
+          <option value="Andhra Pradesh">Andhra Pradesh</option>
+              <option value="Arunachal Pradesh">Arunachal Pradesh</option>
+              <option value="Assam">Assam</option>
+              <option value="Bihar">Bihar</option>
+              <option value="Chhattisgarh">Chhattisgarh</option>
+              <option value="Goa">Goa</option>
+              <option value="Gujarat">Gujarat</option>
+              <option value="Haryana">Haryana</option>
+              <option value="Himachal Pradesh">Himachal Pradesh</option>
+              <option value="Jharkhand">Jharkhand</option>
+              <option value="Karnataka">Karnataka</option>
+              <option value="Kerala">Kerala</option>
+              <option value="Madhya Pradesh">Madhya Pradesh</option>
+              <option value="Maharashtra">Maharashtra</option>
+              <option value="Manipur">Manipur</option>
+              <option value="Meghalaya">Meghalaya</option>
+              <option value="Mizoram">Mizoram</option>
+              <option value="Nagaland">Nagaland</option>
+              <option value="Odisha">Odisha</option>
+              <option value="Punjab">Punjab</option>
+              <option value="Rajasthan">Rajasthan</option>
+              <option value="Sikkim">Sikkim</option>
+              <option value="Tamil Nadu">Tamil Nadu</option>
+              <option value="Telangana">Telangana</option>
+              <option value="Tripura">Tripura</option>
+              <option value="Uttar Pradesh">Uttar Pradesh</option>
+              <option value="Uttarakhand">Uttarakhand</option>
+              <option value="West Bengal">West Bengal</option>
+              <option value="Andaman and Nicobar Islands">Andaman and Nicobar Islands</option>
+              <option value="Chandigarh">Chandigarh</option>
+              <option value="Dadra and Nagar Haveli and Daman and Diu">
+                Dadra and Nagar Haveli and Daman and Diu
+              </option>
+              <option value="Delhi">Delhi</option>
+              <option value="Jammu and Kashmir">Jammu and Kashmir</option>
+              <option value="Ladakh">Ladakh</option>
+              <option value="Lakshadweep">Lakshadweep</option>
+              <option value="Puducherry">Puducherry</option>
+              <option value="Other">Other</option>
         </select>
       </div>
-      <div className="col-md-4">
-        <label className="form-label">Visitor Address/Company: <span className="text-danger">*</span></label>
-        <input type="text" value={address} onChange={(e) => setAddress(e.target.value)} required className="form-control" />
-      </div>
-      <div className="col-md-4">
-        <label className="form-label">Visitor Purpose: <span className="text-danger">*</span></label>
-        <input type="text" value={purpose} onChange={(e) => setPurpose(e.target.value)} required className="form-control" />
-      </div>
-    </div>
 
-{/* Row 4: Visitor carryingItems goods */}
-    <div className="row mb-3">
-      <div className="col-md-4">
-      <label className="form-label">Visitor Carrying Items: <span className="text-danger">*</span></label>
-      <input type="text" value={carryingItems} onChange={(e) => setItems(e.target.value)} required className="form-control" />
-      </div>
-
-      </div>
-
-{/* Row 4: Visitor carryingItems goods */}
-    <div className="row mb-3">
-      <div className="col-md-4">
-          <button type="button" onClick={captureImage} className="btn btn-secondary w-100 mb-2">
-          Capture Image
-        </button>      
-      </div>
-
-<div className="col-md-4">
-        
-      </div>
-
-      {/* Row 5: Submit Button */}
-      <div className="col-md-4">
-        <button type="submit" className="btn btn-primary w-100">Register</button>        
-      </div>
-
-</div>
-
-{/* Row 4: Visitor Photo */}
-  <div className="row mb-3">
-      <div className="col-md-4">
-        {/* <label className="form-label">Visitor Image:</label> */}
-        <Webcam
-          audio={false}
-          ref={webcamRef}
-          screenshotFormat="image/jpeg"
-          className="img-fluid mb-4"
+      {/* Address */}
+      <div>
+        <label className="form-label">
+          Visitor Address/Company: *
+        </label>
+        <input
+          type="text"
+          value={address}
+          onChange={(e) => setAddress(e.target.value)}
+          required
+          className="form-control"
         />
-      </div>      
-      <div className="col-md-4">
-
-      </div>
-      <div className="col-md-4">
-        {visitorImage && (
-          <img
-            src={URL.createObjectURL(visitorImage)}
-            alt="Captured Visitor"
-            className="img-thumbnail"
-            style={{ width: '400px' }}
-          />
-        )}
       </div>
 
+      {/* Purpose */} 
+      <div>
+        <label className="form-label">
+          Visitor Purpose: *
+        </label>
+        <input
+          type="text"
+          value={purpose}
+          onChange={(e) => setPurpose(e.target.value)}
+          required
+          className="form-control"
+        />
+      </div>
 
+      {/* Carrying Items */}
+      <div>
+        <label className="form-label">
+          Visitor Carrying Items: *
+        </label>
+        <input
+          type="text"
+          value={carryingItems}
+          onChange={(e) => setItems(e.target.value)}
+          required
+          className="form-control"
+        />
+      </div>
+
+      <button
+        type="button"
+        onClick={captureImage}
+        className="btn btn-secondary w-100"
+        disabled={loading}
+      >
+        Capture Image
+      </button>
+
+      <button
+        type="submit"
+        className="btn btn-primary w-100"
+        disabled={loading || !selectedPlant}
+      >
+        Register
+      </button>
 
     </div>
 
-    
-    
-    <div className="row">
-      <div className="col-md-12">
-        
-      </div>
+    {/* RIGHT SIDE - CAMERA & BUTTONS */}
+    <div className="camera-section">
+
+      <Webcam
+        audio={false}
+        ref={webcamRef}
+        screenshotFormat="image/jpeg"
+        className="webcam-box"
+      />
+
+      {visitorImage && (
+        <img
+          src={URL.createObjectURL(visitorImage)}
+          alt="Captured Visitor"
+          className="preview-image"
+        />
+      )}
+
+      
+
     </div>
+
   </form>
 </div>
 
-
+      {/* Popup */}
+      {showPopup && (
+        <div className="popup-overlay">
+          <div className="popup-content">
+            <h2 className="text-center">Visitor Pass Details</h2>
+            {submittedData.image && (
+              <img src={submittedData.image} alt="Visitor" className="img-thumbnail mb-3" />
+            )}
+            <p><strong>Name:</strong> {submittedData.name}</p>
+            <p><strong>Email:</strong> {submittedData.email}</p>
+            <p><strong>Gender:</strong> {submittedData.gender}</p>
+            <p><strong>Mobile:</strong> {submittedData.mobile}</p>
+            <p><strong>State:</strong> {submittedData.state}</p>
+            <p><strong>Address:</strong> {submittedData.address}</p>
+            <p><strong>Purpose:</strong> {submittedData.purpose}</p>
+            <p><strong>Carrying Items:</strong> {submittedData.carryingItems}</p>
+            <p><strong>Employee:</strong> {submittedData.employee}</p>
+            <p className="text-center mt-3">Redirecting in {countdown} seconds...</p>
+            <div className="d-flex justify-content-center mt-3">
+              <button
+                className="btn btn-secondary"
+                onClick={() =>
+                (window.location.href = `${window.location.origin}/G-Visitor/#/VisitorReport`)
+              }
+              >
+                Close Now
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
   );
 };
-
-export default VisitorEntry;

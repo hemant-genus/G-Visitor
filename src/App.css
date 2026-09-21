@@ -4,16 +4,29 @@
   min-height: 100vh;
 }
 
+/* This holds Sidebar + Page */
 .main-content {
   display: flex;
   flex: 1;
+  overflow: hidden; /* Prevent layout breaking */
 }
 
+/* SIDEBAR FIX */
+.side-menu {
+  width: 240px;        /* Fixed width */
+  min-width: 240px;    /* Prevent shrinking */
+  flex-shrink: 0;      /* VERY IMPORTANT */
+}
+
+/* PAGE CONTENT */
 .page-content {
   flex: 1;
   padding: 20px;
+  overflow-x: auto;    /* Scroll inside content only */
+  overflow-y: auto;
 }
 
+/* Responsive */
 @media (max-width: 768px) {
   .main-content {
     flex-direction: column;
@@ -21,6 +34,6 @@
 
   .side-menu {
     width: 100%;
-    padding: 10px;
+    min-width: 100%;
   }
 }

@@ -1,0 +1,171 @@
+/* Page wrapper */
+.user-rights-container {
+  padding: 14px;
+  background: #f6f8fc;
+  min-height: 100vh;
+  font-family: "Segoe UI", Arial, sans-serif;
+}
+
+/* Card layout */
+.user-rights-card {
+  background: #ffffff;
+  border-radius: 6px;
+  padding: 14px;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.08);
+}
+
+/* Page title */
+.user-rights-title {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 10px;
+  color: #1f2937;
+}
+
+/* Form row */
+.user-rights-form {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.user-rights-form > * {
+  flex: 0 0 auto; /* 🔥 stop stretching */
+}
+
+/* Input & dropdown (EXTRA TIGHT) */
+.user-rights-form input,
+.user-rights-form select {
+  padding: 4px 6px;
+  height: 28px;
+  width: 140px;        /* 🔥 tighter width */
+  max-width: 140px;
+  border-radius: 4px;
+  border: 1px solid #d1d5db;
+  font-size: 12.5px;
+  box-sizing: border-box;
+}
+
+.user-rights-form input:focus,
+.user-rights-form select:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.25);
+}
+
+/* Button (TIGHT & NEAT) */
+.user-rights-btn {
+  padding: 4px 10px;
+  height: 28px;
+  min-width: 72px;
+  background: #2563eb;
+  color: #ffffff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12.5px;
+  font-weight: 500;
+  white-space: nowrap;
+  transition: background 0.2s ease;
+}
+
+.user-rights-btn:hover {
+  background: #1d4ed8;
+}
+
+/* Table */
+.user-rights-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 6px;
+}
+
+.user-rights-table th,
+.user-rights-table td {
+  border: 1px solid #e5e7eb;
+  padding: 5px 7px;      /* 🔥 tighter rows */
+  text-align: left;
+  font-size: 12.5px;
+}
+
+.user-rights-table th {
+  background: #f1f5f9;
+  font-weight: 600;
+  color: #334155;
+}
+
+.user-rights-table tr:hover {
+  background: #f9fafb;
+}
+
+/* Switch / checkbox alignment */
+.user-rights-table input[type="radio"],
+.user-rights-table input[type="checkbox"] {
+  transform: scale(0.9);
+  cursor: pointer;
+}
+
+/* No data message */
+.no-data {
+  text-align: center;
+  padding: 10px;
+  color: #6b7280;
+  font-size: 12.5px;
+}
+
+/* FORCE compact Bootstrap inputs */
+.user-rights-container .form-control {
+  height: 28px !important;
+  width: 140px !important;
+  padding: 4px 6px !important;
+  font-size: 12.5px !important;
+  border-radius: 4px !important;
+}
+
+/* FORCE compact Bootstrap buttons */
+.user-rights-container .btn {
+  height: 28px !important;
+  padding: 4px 10px !important;
+  font-size: 12.5px !important;
+  border-radius: 4px !important;
+  line-height: 1.1 !important;
+  width: auto !important;
+}
+
+/* Primary/Search button */
+.user-rights-container .btn-primary {
+  min-width: 72px;
+}
+
+/* Save button */
+.user-rights-container .btn-success {
+  height: 30px !important;
+  padding: 4px 14px !important;
+}
+
+/* Table compactness */
+.user-rights-container .table th,
+.user-rights-container .table td {
+  padding: 5px 7px !important;
+  font-size: 12.5px !important;
+  vertical-align: middle !important;
+}
+
+/* Table header */
+.user-rights-container .table thead th {
+  background: #f1f5f9 !important;
+  font-weight: 600;
+  color: #334155;
+}
+
+/* Hover effect */
+.user-rights-container .table tbody tr:hover {
+  background-color: #f9fafb;
+}
+
+/* Reduce switch visual dominance */
+.user-rights-container .react-switch {
+  transform: scale(0.82);
+}

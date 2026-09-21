@@ -1,12 +1,9 @@
+/* VisitorEntry OLD CSS  */
+
 .img-fluid {
     max-width: 400px;
     height: auto;
 }
-/* 
-.img-thumbnail {
-    max-width: 400px;
-    height: auto;
-} */
 
 .visitor-container {
     width: 90%;
@@ -16,41 +13,37 @@
     background: #f9f9f9;
     border-radius: 8px;
     box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-  }
-  
-  h2 {
+}
+
+h2 {
     text-align: center;
     color: #333;
-  }
-  
-  .form-group {
+}
+
+.form-group {
     margin-bottom: 15px;
-  }
-  
-  label {
+}
+
+label {
     display: block;
     font-weight: bold;
     margin-bottom: 5px;
-  }
-  
-  .required {
-    color: red;
-  }
-  
-  input, select {
+}
+
+input, select {
     width: 100%;
     padding: 8px;
     font-size: 16px;
     border: 1px solid #ccc;
     border-radius: 4px;
-  }
-  
-  .webcam {
+}
+
+.webcam {
     width: 100%;
     border-radius: 5px;
-  }
-  
-  .capture-btn, .submit-btn {
+}
+
+.capture-btn, .submit-btn {
     width: 100%;
     padding: 12px;
     font-size: 16px;
@@ -58,41 +51,229 @@
     cursor: pointer;
     margin-top: 10px;
     border-radius: 5px;
-  }
-  
-  .capture-btn {
+}
+
+.capture-btn {
     background-color: #007bff;
     color: white;
-  }
-  
-  .submit-btn {
+}
+
+.submit-btn {
     background-color: #28a745;
     color: white;
-  }
-  
-  .capture-btn:hover {
+}
+
+.capture-btn:hover {
     background-color: #0056b3;
-  }
-  
-  .submit-btn:hover {
+}
+
+.submit-btn:hover {
     background-color: #218838;
-  }
-  
-  .captured-image {
+}
+
+.captured-image {
     width: 100%;
     max-width: 150px;
     display: block;
     margin-top: 10px;
     border-radius: 5px;
-  }
-  
-  @media (max-width: 480px) {
+}
+
+/* ----------------- Popup Overlay ----------------- */
+.popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 1100;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.popup-content {
+    background: #fff;
+    padding: 25px;
+    border-radius: 10px;
+    width: 90%;
+    max-width: 500px;
+    text-align: center;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.popup-content img {
+    max-width: 200px;
+    margin-bottom: 15px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+}
+
+.popup-content p {
+    font-size: 16px;
+    margin: 5px 0;
+}
+
+.popup-content button {
+    padding: 10px 15px;
+    font-size: 16px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.popup-content button.btn-primary {
+    background-color: #007bff;
+    color: white;
+    margin-right: 10px;
+}
+
+.popup-content button.btn-primary:hover {
+    background-color: #0056b3;
+}
+
+.popup-content button.btn-secondary {
+    background-color: #6c757d;
+    color: white;
+}
+
+.popup-content button.btn-secondary:hover {
+    background-color: #5a6268;
+}
+
+@media (max-width: 480px) {
     .visitor-container {
-      padding: 15px;
+        padding: 15px;
     }
-  
+
     input, select, .capture-btn, .submit-btn {
-      font-size: 14px;
+        font-size: 14px;
     }
-  }
-  
+
+    .popup-content {
+        padding: 15px;
+    }
+
+    .popup-content p {
+        font-size: 14px;
+    }
+
+    .popup-content img {
+        max-width: 150px;
+    }
+}
+
+.popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1100;
+}
+
+.popup-content {
+  background: #fff;
+  padding: 30px;
+  border-radius: 10px;
+  width: 90%;
+  max-width: 450px;
+  text-align: left;
+}
+
+.popup-content h2 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.popup-content img {
+  display: block;
+  margin: 0 auto 15px auto;
+  width: 150px;
+  border-radius: 5px;
+}
+
+.popup-content p {
+  margin: 5px 0;
+}
+
+
+
+
+
+
+
+/* ----------New Css to add --------------- */
+
+.visitor-entry-wrapper {
+  width: 100%;
+  height: calc(100vh - 120px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+
+.visitor-form {
+  display: flex;
+  gap: 20px;
+  width: 95%;
+  height: 100%;
+}
+
+/* LEFT SIDE GRID */
+.form-section {
+  flex: 2;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  align-content: start;
+}
+
+/* Compact inputs */
+.form-control,
+.form-select {
+  padding: 6px;
+  font-size: 14px;
+}
+
+.form-label {
+  font-size: 13px;
+  margin-bottom: 3px;
+}
+
+/* RIGHT SIDE */
+.camera-section {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 15px;
+  background: #f4f6f9;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.webcam-box {
+  width: 100%;
+  max-width: 300px;
+  border-radius: 8px;
+}
+
+.preview-image {
+  width: 100%;
+  max-width: 250px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+}
+
+.btn {
+  font-size: 14px;
+  padding: 8px;
+}

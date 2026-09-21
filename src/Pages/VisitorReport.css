@@ -94,3 +94,16 @@
   background-color: #f1f1f1;
 }
 
+.exit-btn {
+  background-color: #e74c3c;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  margin-top: 5px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+.exit-btn:hover {
+  background-color: #c0392b;
+}
+

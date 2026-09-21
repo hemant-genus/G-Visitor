@@ -21,18 +21,23 @@ import {Counter} from './features/counter/Counter'
 import { VisitorEntry } from './Pages/VisitorEntry';
 import { VisitorReport } from './Pages/VisitorReport';
 
-import { VisitorEntryTemp } from './Pages/VisitorEntryTemp';
+// import { VisitorEntryTemp } from './Pages/VisitorEntryTemp';
+// import { UserRights } from './Pages/UserRights';
+import UserRights from './Pages/UserRights';
 
 function Layout() {
+  //debugger;
   const location = useLocation();
   const navigate = useNavigate();
 
   // Do not show Header, Footer, and Menu on login page
   const isLoginPage = location.pathname === '/login';
+
   const userEmail = localStorage.getItem('userEmail');
 
   // Redirect to login page if the user is not logged in and not on the login page
   if (!userEmail && !isLoginPage) {
+    debugger;
     return <Navigate to="/login" />;
   }
 
@@ -45,7 +50,7 @@ function Layout() {
         {!isLoginPage && userEmail && <Menu />} {/* Optional side menu */}
 
         <div className="page-content">
-          <Routes>
+          <Routes >
             <Route path="/" element={<Navigate to="/login" />} />
             <Route path="/login" element={<Login onLogout={() => navigate('/login')} />} />
             <Route path="/home" element={<Home />} />
@@ -56,12 +61,9 @@ function Layout() {
 
             <Route path="/VisitorEntry" element={<VisitorEntry />} />
             <Route path="/VisitorReport" element={<VisitorReport />} />
+            <Route path="/UserRights" element={<UserRights />} />
 
-
-            <Route path="/VisitorEntryTemp" element={<VisitorEntryTemp />} />
-
-
-
+            {/* <Route path="/VisitorEntryTemp" element={<VisitorEntryTemp />} /> */}
 
             {/* <Route path="/imageupload" element={<ImageUploadDownload />} />
             <Route path="/imagedownload" element={<FileListDownload />} /> */}

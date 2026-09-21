@@ -1,31 +1,37 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import './Menu.css';
 
 const Menu = () => {
-  const [isOpen, setIsOpen] = useState(false); // Toggle menu state
+  //  debugger;
+  const [isOpen, setIsOpen] = useState(false);
+  const [menuItems, setMenuItems] = useState([]);
   const navigate = useNavigate();
 
+  useEffect(() => {
+    const storedMenu = localStorage.getItem('MenuItem');
+
+    if (storedMenu) {
+      debugger
+      setMenuItems(JSON.parse(storedMenu));
+    }
+  }, []);
+
   const handleLogout = () => {
-    localStorage.removeItem('userEmail');
+    localStorage.clear();
     navigate('/login');
   };
 
   return (
     <nav className="menu">
-      <div className="menu-header">
-        
-
-        {/* <h2 className="menu-title">Visitor System</h2> */}
-      </div>
-
-      {/* Collapsible Menu */}
       <ul className={`menu-list ${isOpen ? 'open' : ''}`}>
-        
-        <li><Link to="/home">Home</Link></li>
-        <li><Link to="/VisitorEntry">Visitor Pass</Link></li>
-        <li><Link to="/VisitorReport">Visitor Report</Link></li>
-        
+        {menuItems
+        .filter(menu => menu.isAssigned === 1)   // 👈 HIDE unassigned menus
+        .map((menu) => (
+          <li key={menu.menuId}>
+            <Link to={menu.menuPath}>{menu.menuName}</Link>
+          </li>
+        ))}
       </ul>
     </nav>
   );
